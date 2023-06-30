@@ -1,9 +1,8 @@
 name: publish-tools-manual
 on: workflow_dispatch
 jobs:
-  on-success:
+  publish-cuda118-ubuntu2204-pytorch-conda-tools-image:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v2
       - name: Login to GitHub Container Registry
@@ -16,8 +15,3 @@ jobs:
         run: |
           docker build cuda11.8.0-ubuntu22.04-pytorch-conda-tools --tag ghcr.io/viwainvestgmbh/runpod-llm-cuda118-pytorch-tools:latest
           docker push ghcr.io/viwainvestgmbh/runpod-llm-cuda118-pytorch-tools:latest
-  on-failure:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    steps:
-      - run: echo 'The triggering publish-tools failed'
