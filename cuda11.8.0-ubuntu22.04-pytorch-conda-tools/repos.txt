@@ -1,0 +1,17 @@
+https://github.com/oobabooga/text-generation-webui.git
+https://github.com/artidoro/qlora.git
+https://github.com/PanQiWei/AutoGPTQ.git
+https://github.com/lm-sys/FastChat.git
+CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 python -m pip install llama-cpp-python
+https://github.com/ggerganov/llama.cpp #make LLAMA_CUBLAS=1
+
+
+#cudatools dev
+export PATH=/usr/local/cuda/bin${PATH:+:${PATH}} 
+export LD_LIBRARY_PATH=/usr/local/cuda/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+#general
+python -m pip install --upgrade pip setuptools wheel
+
+flash attention
+MAX_JOBS=96 python -m pip install  flash_attn --no-build-isolation
