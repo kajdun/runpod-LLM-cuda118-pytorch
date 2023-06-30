@@ -4,9 +4,7 @@ FROM ghcr.io/viwainvestgmbh/runpod-llm-cuda118-pytorch-base:latest as base
 ARG APTPKGS="git-lfs tmux tldr neovim rsync net-tools less iputils-ping 7zip zip unzip"
 
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends $APTPKGS && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends $APTPKGS 
 
 RUN git config --global credential.helper store && \
     git lfs install
@@ -34,19 +32,18 @@ RUN mkdir -p ${WORKER_HOME}/data/utils
 RUN mkdir -p ${WORKER_HOME}/data/loras
 
 COPY scripts ${WORKER_HOME}/scripts
-COPY env-files/textgen.yml ${WORKER_HOME}/textgen.yml
 COPY repos.txt ${WORKER_HOME}/repos.txt
 COPY conf-files/vimrc $WORKER_HOME/.vimrc
 COPY conf-files/tmux.conf $WORKER_HOME/.tmux.conf
 
 
-RUN sudo -u root chown worker:worker ${WORKER_HOME}/textgen.yml
 RUN sudo -u root chown worker:worker ${WORKER_HOME}/repos.txt
 RUN sudo -u root chown -R worker:worker ${WORKER_HOME}/scripts
+RUN sudo -u root chmod +x ${WORKER_HOME}/scripts/*.sh
 RUN sudo -u root chown worker:worker ${WORKER_HOME}/.vimrc
 RUN sudo -u root chown worker:worker ${WORKER_HOME}/.tmux.conf
 
-RUN conda env create -f ${WORKER_HOME}/textgen.yml && rm -f ${WORKER_HOME}/textgen.yml
+RUN conda create -y -q -n textgen python=3.10
 
 ENV PATH_FOR_ROOT $PATH
 ENV PATH ${ANACONDA_HOME}/envs/textgen/bin:$PATH
@@ -56,7 +53,6 @@ SHELL ["conda", "run", "-n", "textgen", "/bin/bash", "-c"]
 RUN git clone https://github.com/oobabooga/text-generation-webui && \
     cd text-generation-webui && \
     pip install -r requirements.txt && \
-    bash -c 'for req in extensions/*/requirements.txt ; do pip install -r "$req" ; done' && \
     mkdir -p repositories && \
     cd repositories && \
     git clone https://github.com/turboderp/exllama && \
