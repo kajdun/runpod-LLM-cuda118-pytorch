@@ -1,5 +1,5 @@
 # Base pytorch image
-FROM ghcr.io/viwainvestgmbh/cuda11.8.0-ubuntu22.04-pytorch-conda-base:latest as base
+FROM ghcr.io/viwainvestgmbh/runpod-LLM-cuda118-pytorch-base:latest as base
 
 ARG APTPKGS="git-lfs tmux tldr neovim rsync net-tools less iputils-ping 7zip zip unzip"
 

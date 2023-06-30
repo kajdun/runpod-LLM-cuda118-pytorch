@@ -35,10 +35,6 @@ WORKDIR /workspace
 
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 RUN python get-pip.py
-#RUN pip install --no-cache-dir --pre torch torchvision torchaudio cuda-python==11.8.0 --extra-index-url https://download.pytorch.org/whl/nightly/cu118
-#RUN pip install --no-cache-dir -U jupyterlab ipywidgets jupyter-archive jupyter_contrib_nbextensions
-#RUN jupyter nbextension enable --py widgetsnbextension 
-#RUN jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 
 RUN useradd -b /workspace -m -s /bin/bash worker
 RUN echo "worker   ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/worker
@@ -64,7 +60,6 @@ RUN curl -L -O "https://repo.anaconda.com/archive/${ANACONDA_INSTALLER}" \
     && chmod +x $ANACONDA_INSTALLER && ./${ANACONDA_INSTALLER} -b -p $ANACONDA_HOME
 
 RUN sudo -u root ln -s ${ANACONDA_HOME}/etc/profile.d/conda.sh /etc/profile.d/conda.sh
-#RUN sudo -u root chown -R worker:worker ${ANACONDA_HOME} && sudo -u root chmod +x ${ANACONDA_HOME}/etc/profile.d/conda.sh
 RUN sudo -u root chmod +x ${ANACONDA_HOME}/etc/profile.d/conda.sh
 RUN sudo -u root chown worker:worker ${ANACONDA_HOME}/etc/profile.d/conda.sh 
 
