@@ -70,7 +70,6 @@ RUN find $ANACONDA_HOME/ -follow -type f -name '*.a' -delete && \
 
 ENV PATH $ANACONDA_BIN:$PATH
 
-
 RUN conda init bash
 
 USER root

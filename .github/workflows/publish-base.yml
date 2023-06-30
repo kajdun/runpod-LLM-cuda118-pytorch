@@ -16,5 +16,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build the cuda118-ubuntu2204-pytorch-conda-base Docker image
         run: |
-          docker build cuda11.8.0-ubuntu22.04-pytorch-conda-base --tag ghcr.io/viwainvestgmbh/runpod-LLM-cuda118-pytorch-base:latest
-          docker push ghcr.io/viwainvestgmbh/runpod-LLM-cuda118-pytorch-base:latest
+          docker build cuda11.8.0-ubuntu22.04-pytorch-conda-base --tag ghcr.io/viwainvestgmbh/runpod-llm-cuda118-pytorch-base:latest
+          docker push ghcr.io/viwainvestgmbh/runpod-llm-cuda118-pytorch-base:latest
