@@ -50,20 +50,19 @@ ENV PATH ${ANACONDA_HOME}/envs/textgen/bin:$PATH
 
 SHELL ["conda", "run", "-n", "textgen", "/bin/bash", "-c"]
 
-RUN git clone https://github.com/oobabooga/text-generation-webui && \
-    cd text-generation-webui && \
-    pip install -r requirements.txt && \
-    mkdir -p repositories && \
-    cd repositories && \
-    git clone https://github.com/turboderp/exllama && \
-    pip install -r exllama/requirements.txt
+RUN git clone https://github.com/oobabooga/text-generation-webui
+RUN cd ${WORKER_HOME}/text-generation-webui && python -m pip install -r requirements.txt
+RUN mkdir -p ${WORKER_HOME}/text-generation-webui/repositories
+RUN cd ${WORKER_HOME}/text-generation-webui/repositories && \
+    git clone https://github.com/turboderp/exllama
+RUN cd ${WORKER_HOME}/text-generation-webui/repositories/exllama && python -m pip install -r exllama/requirements.txt
 
 ARG AUTOGPTQ="0.2.2"
 ENV CUDA_VERSION=""
 ENV GITHUB_ACTIONS=true
 ENV TORCH_CUDA_ARCH_LIST="8.0;8.6+PTX;8.9;9.0" 
-RUN pip uninstall -y auto-gptq && \
-    pip install --no-cache-dir auto-gptq==$AUTOGPTQ
+RUN python -m pip uninstall -y auto-gptq && \
+    python -m pip install --no-cache-dir auto-gptq==$AUTOGPTQ
 
 #RUN touch ${WORKER_HOME}/do.not.launch.UI
 
