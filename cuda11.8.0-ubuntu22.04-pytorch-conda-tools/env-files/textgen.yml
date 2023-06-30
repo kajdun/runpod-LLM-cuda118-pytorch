@@ -1,16 +1,14 @@
 name: textgen
 channels:
-  - pytorch
-  - conda-forge
-  - nvidia/label/cuda-11.8.0
   - nvidia
+  - pytorch
   - defaults
 dependencies:
   - python=3.10
+  - pytorch-cuda=11.8
+  - torchvision
+  - torchaudio  
   - ninja
   - git
   - pytorch
-  - torchvision
-  - torchaudio
-  - pytorch-cuda=11.8
   - pip
