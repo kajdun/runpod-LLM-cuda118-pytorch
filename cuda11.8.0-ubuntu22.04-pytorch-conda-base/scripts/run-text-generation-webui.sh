@@ -11,4 +11,4 @@ ARGS=("$@" --listen)
 
 echo "Launching text-generation-webui with args: ${ARGS[@]}"
 
-su -l -c "conda run -n textgen --cwd $VOLUME/text-generation-webui python3 server.py ${ARGS[@]}" -m "$USER"
+cd $VOLUME/text-generation-webui && conda run -n textgen python server.py "${ARGS[@]}" 
