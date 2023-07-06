@@ -6,27 +6,23 @@ ARG APTPKGS="wget bash software-properties-common openssh-server sudo tmux tldr 
 
 RUN apt-get update --yes && \
     apt-get upgrade --yes && \
-    apt install --yes --no-install-recommends $APTPKGS
-
-
-RUN add-apt-repository ppa:deadsnakes/ppa
-RUN apt install python3.10 -y --no-install-recommends && \
+    apt install --yes --no-install-recommends $APTPKGS && \
     ln -s /usr/bin/python3.10 /usr/bin/python && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.10 /usr/bin/python3 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 
-RUN mkdir /workspace
-WORKDIR /workspace
-
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 RUN python get-pip.py
 
-RUN pip install --no-cache-dir --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cu118
-RUN pip install --no-cache-dir -U jupyterlab ipywidgets jupyter-archive jupyter_contrib_nbextensions
+RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118
+RUN pip install -U jupyterlab ipywidgets jupyter-archive jupyter_contrib_nbextensions
 RUN jupyter nbextension enable --py widgetsnbextension
 RUN jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+
+RUN mkdir /workspace
+WORKDIR /workspace
 
 RUN useradd -b /workspace -m -s /bin/bash worker
 RUN echo "worker   ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/worker
@@ -44,14 +40,14 @@ ARG ANACONDA_HOME=/workspace/worker/anaconda3
 ARG ANACONDA_BIN="${ANACONDA_HOME}/bin"
 
 USER worker
-workdir $WORKER_HOME
+WORKDIR $WORKER_HOME
 
 ENV PATH "/usr/local/cuda/bin":$PATH
 
-RUN mkdir -p ${WORKER_HOME}/data/datasets
-RUN mkdir -p ${WORKER_HOME}/data/models
-RUN mkdir -p ${WORKER_HOME}/data/utils
-RUN mkdir -p ${WORKER_HOME}/data/loras
+RUN mkdir -p ${WORKER_HOME}/data/datasets && \
+    mkdir -p ${WORKER_HOME}/data/models && \
+    mkdir -p ${WORKER_HOME}/data/utils && \
+    mkdir -p ${WORKER_HOME}/data/loras
 
 RUN git config --global credential.helper store && \
     git lfs install
@@ -63,22 +59,22 @@ COPY conf-files/vimrc $WORKER_HOME/.vimrc
 COPY conf-files/tmux.conf $WORKER_HOME/.tmux.conf
 
 
-RUN sudo -u root chown worker:worker ${WORKER_HOME}/repos.txt
-RUN sudo -u root chown -R worker:worker ${WORKER_HOME}/scripts
-RUN sudo -u root chmod +x ${WORKER_HOME}/scripts/*.sh
-RUN sudo -u root chown -R worker:worker ${WORKER_HOME}/setup
-RUN sudo -u root chmod +x ${WORKER_HOME}/setup/*.sh
-RUN sudo -u root chown worker:worker ${WORKER_HOME}/.vimrc
-RUN sudo -u root chown worker:worker ${WORKER_HOME}/.tmux.conf
+RUN sudo -u root chown worker:worker ${WORKER_HOME}/repos.txt && \
+    sudo -u root chown -R worker:worker ${WORKER_HOME}/scripts && \
+    sudo -u root chmod +x ${WORKER_HOME}/scripts/*.sh && \
+    sudo -u root chown -R worker:worker ${WORKER_HOME}/setup && \
+    sudo -u root chmod +x ${WORKER_HOME}/setup/*.sh && \
+    sudo -u root chown worker:worker ${WORKER_HOME}/.vimrc && \
+    sudo -u root chown worker:worker ${WORKER_HOME}/.tmux.conf
 
 
 RUN curl -L -O "https://repo.anaconda.com/archive/${ANACONDA_INSTALLER}" \
     && chmod +x $ANACONDA_INSTALLER && ./${ANACONDA_INSTALLER} -b -p $ANACONDA_HOME \
     && rm -f $ANACONDA_INSTALLER
 
-RUN sudo -u root ln -s ${ANACONDA_HOME}/etc/profile.d/conda.sh /etc/profile.d/conda.sh
-RUN sudo -u root chmod +x ${ANACONDA_HOME}/etc/profile.d/conda.sh
-RUN sudo -u root chown worker:worker ${ANACONDA_HOME}/etc/profile.d/conda.sh 
+RUN sudo -u root ln -s ${ANACONDA_HOME}/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    sudo -u root chmod +x ${ANACONDA_HOME}/etc/profile.d/conda.sh && \
+    sudo -u root chown worker:worker ${ANACONDA_HOME}/etc/profile.d/conda.sh 
 
 RUN echo ". ${ANACONDA_HOME}/etc/profile.d/conda.sh" >> $WORKER_HOME/.bashrc
 RUN ${ANACONDA_BIN}/conda clean -afy
