@@ -6,17 +6,6 @@ USER=worker
 VOLUME=/workspace/$USER
 SCRIPTDIR=$VOLUME/scripts
 
-# If a volume is already defined, $VOLUME will already exist
-# If a volume is not being used, we'll still use /worksapce to ensure everything is in a known place.
-su -c "mkdir -p $VOLUME/logs" -m "$USER" 
-
-if [ ! -f "/workspace/worker/anaconda3/envs/textgen/bin/python" ]; then
-    echo "Installing text-generation-webui"
-    su -l -c "/bin/bash /workspace/worker/setup/setup-textgen.sh" -m "$USER"
-else
-    echo "Conda environment textgen for text-generation-webui already present. Skipping installation."
-fi
-
 if [[ $PUBLIC_KEY ]]; then
     mkdir -p ~/.ssh
     chmod 700 ~/.ssh
@@ -30,6 +19,17 @@ if [[ $JUPYTER_PASSWORD ]]
 then
     cd /
     jupyter lab --allow-root --no-browser --port=8888 --ip=* --ServerApp.terminado_settings='{"shell_command":["/bin/bash"]}' --ServerApp.token='' --ServerApp.allow_origin=* --ServerApp.preferred_dir=/workspace
+fi
+
+# If a volume is already defined, $VOLUME will already exist
+# If a volume is not being used, we'll still use /worksapce to ensure everything is in a known place.
+su -c "mkdir -p $VOLUME/logs" -m "$USER" 
+
+if [ ! -f "/workspace/worker/anaconda3/envs/textgen/bin/python" ]; then
+    echo "Installing text-generation-webui"
+    su -l -c "/bin/bash /workspace/worker/setup/setup-textgen.sh" -m "$USER"
+else
+    echo "Conda environment textgen for text-generation-webui already present. Skipping installation."
 fi
 
 ARGS=()
