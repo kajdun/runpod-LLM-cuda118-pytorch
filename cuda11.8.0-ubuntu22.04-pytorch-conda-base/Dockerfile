@@ -7,7 +7,7 @@ ENV BASH="/bin/bash" \
 
 SHELL ["/bin/bash", "-c"]
 
-ARG APTPKGS="wget bash python3.10 openssh-server sudo tmux nvtop htop bmon screen vim neovim curl rsync net-tools git git-lfs zip unzip"
+ARG APTPKGS="wget bash python3.10-dev python3.10 openssh-server sudo tmux nvtop htop bmon screen vim neovim curl rsync net-tools git git-lfs zip unzip"
 
 RUN apt-get update --yes && \
     apt-get upgrade --yes && \
@@ -24,8 +24,6 @@ RUN pip install --no-cache-dir --pre torch torchvision torchaudio --extra-index-
 RUN pip install --no-cache-dir -U jupyterlab ipywidgets jupyter-archive jupyter_contrib_nbextensions
 RUN jupyter nbextension enable --py widgetsnbextension
 RUN jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
-
-FROM base as conda_built
 
 RUN mkdir /workspace
 WORKDIR /workspace
