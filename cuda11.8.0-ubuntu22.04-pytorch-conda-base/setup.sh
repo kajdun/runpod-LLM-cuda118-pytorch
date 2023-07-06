@@ -12,8 +12,7 @@ su -c "mkdir -p $VOLUME/logs" -m "$USER"
 
 if [ ! -f "/workspace/worker/anaconda3/envs/textgen/bin/python" ]; then
     echo "Installing text-generation-webui"
-    (su -l -c "/bin/bash /workspace/worker/setup/setup-textgen.sh" -m "$USER" 2>&1) >>$VOLUME/logs/text-generation-webui.log
-    echo "Done. Logs @$VOLUME/logs/text-generation-webui.log"
+    su -l -c "/bin/bash /workspace/worker/setup/setup-textgen.sh" -m "$USER"
 else
     echo "Conda environment textgen for text-generation-webui already present. Skipping installation."
 fi
@@ -25,6 +24,12 @@ if [[ $PUBLIC_KEY ]]; then
     echo "$PUBLIC_KEY" >>authorized_keys
     chmod 700 -R ~/.ssh
     service ssh start
+fi
+
+if [[ $JUPYTER_PASSWORD ]]
+then
+    cd /
+    jupyter lab --allow-root --no-browser --port=8888 --ip=* --ServerApp.terminado_settings='{"shell_command":["/bin/bash"]}' --ServerApp.token='' --ServerApp.allow_origin=* --ServerApp.preferred_dir=/workspace
 fi
 
 ARGS=()
