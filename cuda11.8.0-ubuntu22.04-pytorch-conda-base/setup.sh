@@ -15,12 +15,6 @@ if [[ $PUBLIC_KEY ]]; then
     service ssh start
 fi
 
-if [[ $JUPYTER_PASSWORD ]]
-then
-    cd /
-    jupyter lab --allow-root --no-browser --port=8888 --ip=* --ServerApp.terminado_settings='{"shell_command":["/bin/bash"]}' --ServerApp.token='' --ServerApp.allow_origin=* --ServerApp.preferred_dir=/workspace
-fi
-
 if [ ! -f "/workspace/worker/anaconda3" ]; then
     echo "Installing Anaconda"
     su -l -c "/bin/bash /workspace/worker/setup/setup-anaconda.sh" -m "$USER"
@@ -53,6 +47,13 @@ while true; do
         (su -l -c "/bin/bash $SCRIPTDIR/run-text-generation-webui.sh ${ARGS[@]}" -m "$USER" 2>&1) >>$VOLUME/logs/text-generation-webui.log
 
     fi
+
+    if [[ $JUPYTER_PASSWORD ]]
+    then
+        cd /
+        jupyter lab --allow-root --no-browser --port=8888 --ip=* --ServerApp.terminado_settings='{"shell_command":["/bin/bash"]}' --ServerApp.token='' --ServerApp.allow_origin=* --ServerApp.preferred_dir=/workspace
+    fi    
+    
     sleep 2
 done
 
