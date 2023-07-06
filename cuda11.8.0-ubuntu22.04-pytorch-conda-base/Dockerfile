@@ -1,23 +1,13 @@
 FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
+ENV DEBIAN_FRONTEND noninteractive
+
+ARG APTPKGS="wget bash software-properties-common openssh-server sudo tmux tldr nvtop htop bmon screen vim neovim curl rsync net-tools less iputils-ping git git-lfs 7zip zip unzip"
+
 RUN apt-get update --yes && \
-    # - apt-get upgrade is run to patch known vulnerabilities in apt-get packages as
-    #   the ubuntu base image is rebuilt too seldom sometimes (less than once a month)
     apt-get upgrade --yes && \
-    apt install --yes --no-install-recommends\
-    git\
-    wget\
-    curl\
-    bash\
-    software-properties-common\
-    openssh-server\
-    vim\
-    bmon\
-    screen\
-    sudo\
-    htop\
-    nvtop\
-    unzip
+    apt install --yes --no-install-recommends $APTPKGS
+
 
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt install python3.10 -y --no-install-recommends && \
@@ -62,6 +52,9 @@ RUN mkdir -p ${WORKER_HOME}/data/datasets
 RUN mkdir -p ${WORKER_HOME}/data/models
 RUN mkdir -p ${WORKER_HOME}/data/utils
 RUN mkdir -p ${WORKER_HOME}/data/loras
+
+RUN git config --global credential.helper store && \
+    git lfs install
 
 COPY scripts ${WORKER_HOME}/scripts
 COPY setup ${WORKER_HOME}/setup
