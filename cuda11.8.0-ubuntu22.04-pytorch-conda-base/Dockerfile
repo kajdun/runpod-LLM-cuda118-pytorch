@@ -1,14 +1,18 @@
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04 as base
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV BASH="/bin/bash" \
+    LOCALE="en_US.UTF-8" \
+    TZ="EU/Berlin" \
+    DEBIAN_FRONTEND="noninteractive"
 
-ARG APTPKGS="wget bash software-properties-common openssh-server sudo tmux tldr nvtop htop bmon screen vim neovim curl rsync net-tools less iputils-ping git git-lfs 7zip zip unzip"
+SHELL ["/bin/bash", "-c"]
+
+ARG APTPKGS="wget bash python3.10 openssh-server sudo tmux nvtop htop bmon screen vim neovim curl rsync net-tools git git-lfs zip unzip"
 
 RUN apt-get update --yes && \
     apt-get upgrade --yes && \
     apt install --yes --no-install-recommends $APTPKGS && \
     ln -s /usr/bin/python3.10 /usr/bin/python && \
-    rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.10 /usr/bin/python3 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
@@ -16,10 +20,12 @@ RUN apt-get update --yes && \
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 RUN python get-pip.py
 
-RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118
-RUN pip install -U jupyterlab ipywidgets jupyter-archive jupyter_contrib_nbextensions
+RUN pip install --no-cache-dir --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cu118
+RUN pip install --no-cache-dir -U jupyterlab ipywidgets jupyter-archive jupyter_contrib_nbextensions
 RUN jupyter nbextension enable --py widgetsnbextension
 RUN jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+
+FROM base as conda_built
 
 RUN mkdir /workspace
 WORKDIR /workspace
@@ -27,17 +33,7 @@ WORKDIR /workspace
 RUN useradd -b /workspace -m -s /bin/bash worker
 RUN echo "worker   ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/worker
 
-ENV BASH="/bin/bash" \
-    LOCALE="en_US.UTF-8" \
-    TZ="EU/Berlin" \
-    DEBIAN_FRONTEND="noninteractive"
-
-SHELL ["/bin/bash", "-c"] 
-
 ARG WORKER_HOME=/workspace/worker 
-ARG ANACONDA_INSTALLER=Anaconda3-2023.03-1-Linux-x86_64.sh
-ARG ANACONDA_HOME=/workspace/worker/anaconda3
-ARG ANACONDA_BIN="${ANACONDA_HOME}/bin"
 
 USER worker
 WORKDIR $WORKER_HOME
@@ -48,9 +44,6 @@ RUN mkdir -p ${WORKER_HOME}/data/datasets && \
     mkdir -p ${WORKER_HOME}/data/models && \
     mkdir -p ${WORKER_HOME}/data/utils && \
     mkdir -p ${WORKER_HOME}/data/loras
-
-RUN git config --global credential.helper store && \
-    git lfs install
 
 COPY scripts ${WORKER_HOME}/scripts
 COPY setup ${WORKER_HOME}/setup
@@ -66,22 +59,6 @@ RUN sudo -u root chown worker:worker ${WORKER_HOME}/repos.txt && \
     sudo -u root chmod +x ${WORKER_HOME}/setup/*.sh && \
     sudo -u root chown worker:worker ${WORKER_HOME}/.vimrc && \
     sudo -u root chown worker:worker ${WORKER_HOME}/.tmux.conf
-
-
-RUN curl -L -O "https://repo.anaconda.com/archive/${ANACONDA_INSTALLER}" \
-    && chmod +x $ANACONDA_INSTALLER && ./${ANACONDA_INSTALLER} -b -p $ANACONDA_HOME \
-    && rm -f $ANACONDA_INSTALLER
-
-RUN sudo -u root ln -s ${ANACONDA_HOME}/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
-    sudo -u root chmod +x ${ANACONDA_HOME}/etc/profile.d/conda.sh && \
-    sudo -u root chown worker:worker ${ANACONDA_HOME}/etc/profile.d/conda.sh 
-
-RUN echo ". ${ANACONDA_HOME}/etc/profile.d/conda.sh" >> $WORKER_HOME/.bashrc
-RUN ${ANACONDA_BIN}/conda clean -afy
-
-ENV PATH $ANACONDA_BIN:$PATH
-
-RUN conda init bash
 
 USER root
 WORKDIR /

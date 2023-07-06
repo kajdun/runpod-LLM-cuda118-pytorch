@@ -21,6 +21,13 @@ then
     jupyter lab --allow-root --no-browser --port=8888 --ip=* --ServerApp.terminado_settings='{"shell_command":["/bin/bash"]}' --ServerApp.token='' --ServerApp.allow_origin=* --ServerApp.preferred_dir=/workspace
 fi
 
+if [ ! -f "/workspace/worker/anaconda3" ]; then
+    echo "Installing Anaconda"
+    su -l -c "/bin/bash /workspace/worker/setup/setup-anaconda.sh" -m "$USER"
+else
+    echo "Conda already installed."
+fi
+
 # If a volume is already defined, $VOLUME will already exist
 # If a volume is not being used, we'll still use /worksapce to ensure everything is in a known place.
 su -c "mkdir -p $VOLUME/logs" -m "$USER" 
